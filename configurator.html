@@ -1,1 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>S-Klasse Configurator</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
+    body {
+      margin: 0;
+      background-color: white;
+      font-family: sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: row;
+      overflow: hidden;
+    }
+
+    .viewer-section {
+      flex: 2;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      background-color: white;
+    }
+
+    .container {
+      position: relative;
+      width: 100%;
+      max-height: 100vh;
+      aspect-ratio: 4 / 3;
+      overflow: hidden;
+    }
+
+    .color-background {
+      position: absolute;
+      inset: 0;
+      background-color: #272727;
+      z-index: 0;
+    }
+
+    .car-image {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      z-index: 1;
+      opacity: 1;
+      transition: opacity 0.3s ease;
+    }
+
+    .view-gallery {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      background-color: rgba(255, 255, 255, 0.9);
+      padding: 10px 0;
+      z-index: 10;
+    }
+
+    .view-btn {
+      padding: 6px 12px;
+      border: none;
+      background: #eee;
+      cursor: pointer;
+      border-radius: 4px;
+      font-weight: bold;
+      transition: background 0.2s;
+    }
+
+    .view-btn.active {
+      background: #000;
+      color: #fff;
+    }
+
+    .controls {
+      flex: 1;
+      max-width: 33%;
+      background-color: #ffffff;
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      border-left: 1px solid #ccc;
+    }
+
+    .controls h2 {
+      margin-bottom: 20px;
+      font-size: 20px;
+    }
+
+    input[type="color"] {
+      width: 80px;
+      height: 50px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+
+    .export-btn {
+      margin-top: 20px;
+      padding: 8px 16px;
+      background-color: #000;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    small {
+      color: #999;
+      text-align: center;
+      font-size: 12px;
+      max-width: 200px;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column;
+      }
+
+      .controls {
+        max-width: 100%;
+        width: 100%;
+        border-left: none;
+        border-top: 1px solid #ccc;
+        padding: 20px;
+        flex-direction: row;
+        justify-content: space-evenly;
+        flex-wrap: wrap;
+      }
+
+      .controls h2,
+      small {
+        display: none;
+      }
+
+      .export-btn {
+        margin-top: 0;
+      }
+
+      .view-gallery {
+        position: static;
+        margin-top: 10px;
+        background-color: transparent;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="viewer-section">
+    <div class="container">
+      <div class="color-background" id="background"></div>
+      <img src="images/front.png" alt="Car View" class="car-image" id="carImage">
+      <div class="view-gallery">
+        <button class="view-btn active" onclick="switchView('front', this)">Front</button>
+        <button class="view-btn" onclick="switchView('back', this)">Rear</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <h2>Pick a Body Color</h2>
+    <input type="color" id="colorPicker" value="#000000">
+    <button class="export-btn" onclick="downloadConfig()">Download Config</button>
+    <small>For ideation purposes only. Final result may vary*</small>
+  </div>
+
+  <script>
+    const picker = document.getElementById('colorPicker');
+    const bg = document.getElementById('background');
+    const carImage = document.getElementById('carImage');
+
+    picker.addEventListener('input', () => {
+      bg.style.backgroundColor = picker.value;
+    });
+
+    function switchView(view, btn) {
+      // Fade out
+      carImage.style.opacity = 0;
+      setTimeout(() => {
+        carImage.src = `images/${view}.png`;
+        carImage.onload = () => {
+          carImage.style.opacity = 1;
+        };
+      }, 200);
+
+      // Active button style
+      document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+
+    function downloadConfig() {
+      const color = picker.value;
+      const view = document.querySelector('.view-btn.active').innerText.toLowerCase();
+      const content = `s_klasse_config\nView: ${view}\nBody Color: ${color}`;
+      const blob = new Blob([content], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 's_klasse_config.txt';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  </script>
+
+</body>
+</html>
